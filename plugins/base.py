@@ -19,33 +19,45 @@ class Command:
         return self.title
 
 
+class File:
+
+    def __init__(self, source_path):
+        self.source_path = source_path
+
+    def valid_file(self):
+        return os.path.isfile(self.source_path)
+
+    @property
+    def source_path(self):
+        return self.source_path
+
 class Plugin:
 
-    def __init__(self):
-        self.debug = {}
+    def __init__(self, basedir=''):
+        self.debug_commands = []
+        self.debug_files = []
+        self.basedir = basedir
 
     def setup_debug(self):
         NotImplemented
 
     def process_debug(self):
-        for path, debug in self.debug.items():
-            if path[0] == '/' or path[-1] == '/':
-                raise DebugException('Invalid Path: relative path is required and it should be a file')
-            if not isinstance(debug, Command) and not isinstance(debug, str):
-                raise DebugException('Debug must command or a file')
-            if isinstance(debug, str) and not os.path.isfile(debug):
-                raise DebugException('Debug must be a valid file')
+        for debug_command in self.debug_commands:
+            if not isinstance(debug_command, Command):
+                raise DebugException('Debug must be a list of command')
+        for debug_file in self.debug_files:
+            if (not isinstance(debug_file, File)) or (isinstance(debug_file, File) and not debug_file.valid_file()):
+                raise DebugException('Invalid file path defined.')
 
     def generate_debug(self, parent_path):
         self.setup_debug()
         self.process_debug()
-        for path, debug in self.debug.items():
-            complete_path = os.path.join(parent_path, path)
+        complete_path = os.path.join(parent_path, self.basedir)
+        for debug_command in self.debug_commands:
             os.makedirs(os.path.dirname(complete_path), exist_ok=True)
-            if isinstance(debug, Command):
-                with open(complete_path, 'w') as wr:
-                    wr.write(debug.get_command_title() + '\n')
-                    if debug_output := debug.execute():
-                        wr.write(debug_output + '\n')
-            else:
-                shutil.copy(debug, complete_path)
+            with open(complete_path, 'a') as wr:
+                wr.write(debug_command.get_command_title() + '************************************ \n')
+                if debug_output := debug_command.execute():
+                    wr.write(debug_output + '\n')
+        for debug_file in self.debug_files:
+            shutil.copy(debug_file.source_path, os.path.join(complete_path, os.path.basename(debug_file.source_path)))
