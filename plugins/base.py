@@ -22,14 +22,15 @@ class Command:
 class File:
 
     def __init__(self, source_path):
-        self.source_path = source_path
+        self.src_path = source_path
 
     def valid_file(self):
         return os.path.isfile(self.source_path)
 
     @property
     def source_path(self):
-        return self.source_path
+        return self.src_path
+
 
 class Plugin:
 
@@ -60,4 +61,5 @@ class Plugin:
                 if debug_output := debug_command.execute():
                     wr.write(debug_output + '\n')
         for debug_file in self.debug_files:
-            shutil.copy(debug_file.source_path, os.path.join(complete_path, os.path.basename(debug_file.source_path)))
+            shutil.copy(debug_file.source_path, os.path.join(os.path.dirname(complete_path),
+                                                             os.path.basename(debug_file.source_path)))

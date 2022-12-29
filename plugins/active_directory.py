@@ -5,7 +5,7 @@ from .utils import run
 class ActiveDirectory(Plugin):
 
     def __init__(self):
-        super().__init__('activate_directory/activedirectory')
+        super().__init__('activate_directory/dump')
 
     def setup_debug(self):
         self.debug_commands.append(Command('service winbind status', run, 'service winbind status'))
