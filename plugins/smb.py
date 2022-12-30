@@ -1,8 +1,9 @@
-from .base import Plugin, Command
+from .base import Plugin
+from .debug_types import Command
 from .utils import run
 
 
-class smb(Plugin):
+class Smb(Plugin):
 
     def __init__(self):
         super().__init__('smb/', 'dump')

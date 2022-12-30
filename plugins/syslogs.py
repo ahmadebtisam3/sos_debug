@@ -1,4 +1,5 @@
-from .base import Plugin, Folder
+from .base import Plugin
+from .debug_types import Folder
 
 
 class SysLogs(Plugin):

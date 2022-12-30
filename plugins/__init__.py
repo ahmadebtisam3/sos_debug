@@ -2,13 +2,13 @@ import os
 from importlib import import_module
 
 from .base import Plugin
-from .base import Command
 
 BUILTIN_FILES = [
     '__init__.py',
     'base.py',
     'utils.py',
-    'exception.py'
+    'exception.py',
+    'debug_types.py',
 ]
 
 
