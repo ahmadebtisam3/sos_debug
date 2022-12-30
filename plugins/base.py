@@ -51,10 +51,9 @@ class Folder(Debugs):
         self.src_path = source_path
 
     def validate(self):
-        return os.path.isfile(self.src_path)
+        return os.path.isdir(self.src_path)
 
     def write_debug(self, folder_path, file_path):
-        super().write_debug(folder_path, file_path)
         shutil.copytree(self.src_path, folder_path)
 
 
