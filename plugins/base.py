@@ -4,7 +4,16 @@ import os
 from .exception import DebugException
 
 
-class Command:
+class Debugs:
+
+    def write_debug(self, folder_path, file_path) -> None:
+        os.makedirs(folder_path, exist_ok=True)
+
+    def validate(self):
+        return True
+
+
+class Command(Debugs):
 
     def __init__(self, title, callback, *args, **kwargs):
         self.callback = callback
@@ -12,54 +21,61 @@ class Command:
         self.kwargs = kwargs
         self.title = title
 
-    def execute(self) -> str:
-        return self.callback(*self.args, **self.kwargs)
+    def write_debug(self, folder_path, file_path) -> None:
+        super().write_debug(folder_path, file_path)
+        output = self.callback(*self.args, **self.kwargs)
+        with open(os.path.join(folder_path, file_path), 'a') as wr:
+            wr.write(self.title + '************************************ \n')
+            wr.write(output + '\n')
 
     def get_command_title(self):
         return self.title
 
 
-class File:
+class File(Debugs):
 
     def __init__(self, source_path):
         self.src_path = source_path
 
-    def valid_file(self):
-        return os.path.isfile(self.source_path)
+    def validate(self):
+        return os.path.isfile(self.src_path)
 
-    @property
-    def source_path(self):
-        return self.src_path
+    def write_debug(self, folder_path, file_path):
+        super().write_debug(folder_path, file_path)
+        shutil.copy(self.src_path, folder_path)
+
+
+class Folder(Debugs):
+
+    def __init__(self, source_path):
+        self.src_path = source_path
+
+    def validate(self):
+        return os.path.isfile(self.src_path)
+
+    def write_debug(self, folder_path, file_path):
+        super().write_debug(folder_path, file_path)
+        shutil.copytree(self.src_path, folder_path)
 
 
 class Plugin:
 
-    def __init__(self, basedir=''):
-        self.debug_commands = []
-        self.debug_files = []
+    def __init__(self, basedir='', file=''):
+        self.debugs = []
         self.basedir = basedir
+        self.file_path = file
 
     def setup_debug(self):
         NotImplemented
 
     def process_debug(self):
-        for debug_command in self.debug_commands:
-            if not isinstance(debug_command, Command):
-                raise DebugException('Debug must be a list of command')
-        for debug_file in self.debug_files:
-            if (not isinstance(debug_file, File)) or (isinstance(debug_file, File) and not debug_file.valid_file()):
-                raise DebugException('Invalid file path defined.')
+        for debug in self.debugs:
+            if (not isinstance(debug, Debugs)) or (isinstance(debug, Debugs) and not debug.validate()):
+                raise DebugException('Invalid debug Type')
 
     def generate_debug(self, parent_path):
         self.setup_debug()
         self.process_debug()
-        complete_path = os.path.join(parent_path, self.basedir)
-        for debug_command in self.debug_commands:
-            os.makedirs(os.path.dirname(complete_path), exist_ok=True)
-            with open(complete_path, 'a') as wr:
-                wr.write(debug_command.get_command_title() + '************************************ \n')
-                if debug_output := debug_command.execute():
-                    wr.write(debug_output + '\n')
-        for debug_file in self.debug_files:
-            shutil.copy(debug_file.source_path, os.path.join(os.path.dirname(complete_path),
-                                                             os.path.basename(debug_file.source_path)))
+        dir_path = os.path.join(parent_path, self.basedir)
+        for debug in self.debugs:
+            debug.write_debug(dir_path, self.file_path)

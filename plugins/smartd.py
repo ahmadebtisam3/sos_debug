@@ -5,7 +5,7 @@ from .utils import run
 class smartd(Plugin):
 
     def __init__(self):
-        super().__init__('smartd/dump')
+        super().__init__('smartd/', 'dump')
 
     def setup_debug(self):
-        self.debug_commands.append(Command('smartd service status ', run, 'systemctl status smartd'))
+        self.debugs.append(Command('smartd service status ', run, 'systemctl status smartd'))
